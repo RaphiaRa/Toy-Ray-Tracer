@@ -11,7 +11,7 @@ SceneNode::SceneNode(std::string_view id) noexcept
         : id_(id) {}
 
 SceneNode::SceneNode(SceneGraph* graph, std::string_view id) noexcept
-        : graph_(graph), id_(id) {}
+        : id_(id), graph_(graph) {}
 
 const std::string& SceneNode::id() const noexcept
 {
@@ -174,7 +174,7 @@ void SceneNode::update()
 
         } else {
             const Vector3 scale = parent_->absScale_;
-            const float f       = (parent_->absIsFlipped_ ? -1 : 1);
+            //const float f       = (parent_->absIsFlipped_ ? -1 : 1);
             Matrix3 rot         = parent_->absRot_;
 
             absPos_       = parent_->absPos_ + rot * pos_;

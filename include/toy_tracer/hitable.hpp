@@ -5,11 +5,13 @@
 #include "ray.hpp"
 #include "vertex_shader.hpp"
 
+#include <cstdint>
+
 namespace toy_tracer
 {
 struct HitRecord {
     float distance;
-    math::Vector<uint8_t, 3> rgb;
+    math::Vector<std::uint8_t, 3> rgb;
 };
 
 class Hitable {

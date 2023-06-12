@@ -54,7 +54,6 @@ class Mesh : public SceneObject, public Renderable {
     static Mesh fromStlFile(const std::string& filename)
     {
         using Vector3 = math::Vector<float, 3>;
-        using Matrix3 = math::Matrix<float, 3, 3>;
         struct Header {
             char header[80];
             uint32_t triangleCount;

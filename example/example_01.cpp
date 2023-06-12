@@ -8,6 +8,8 @@
 using Vector3 = toy_tracer::math::Vector<float, 3>;
 int main(int argc, char** argv)
 {
+    (void)argc;
+    (void)argv;
     toy_tracer::Renderer renderer(800, 600);
     toy_tracer::Camera camera(4, 3, 1.0f);
     renderer.setCamera(camera);
@@ -24,7 +26,7 @@ int main(int argc, char** argv)
 
     toy_tracer::SceneNode meshNode("mesh");
     meshNode.attach(&mesh);
-    meshNode.translate(Vector3{ 0.0f, 0.0f, 2.0f });
+    meshNode.translate(Vector3{ 0.0f, 0.0f, 1.0f });
     meshNode.rotateX(toy_tracer::math::degToRad(80.0f));
     meshNode.rotateZ(toy_tracer::math::degToRad(-10.0f));
 

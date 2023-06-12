@@ -25,7 +25,7 @@ void Renderer::render(void* buffer, size_t size)
             float v            = static_cast<float>(h) / static_cast<float>(height_ - 1);
             Vector3 direction  = (lowerLeftCorner + Vector3{ u * viewportWidth, v * viewportHeight, 0.0f }) - origin;
             Vector3 normalized = direction / math::length(direction);
-            Ray ray(origin, direction);
+            Ray ray(origin, normalized);
 
             std::optional<HitRecord> hitRecord;
             for (Renderable* r : renderables_) {
