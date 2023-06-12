@@ -1,8 +1,6 @@
 ### Toy-Ray-Tracer
 
-
-
-**Description**
+### Work in progress!
 
 **Build Instructions**
 Dependencies:
