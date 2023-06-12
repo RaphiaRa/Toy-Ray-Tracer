@@ -1,5 +1,5 @@
-#ifndef toy_tracer_STL_FMT_HPP
-#define toy_tracer_STL_FMT_HPP
+#ifndef TOY_TRACER_STL_FMT_HPP
+#define TOY_TRACER_STL_FMT_HPP
 
 #include <array>
 #include <fstream>

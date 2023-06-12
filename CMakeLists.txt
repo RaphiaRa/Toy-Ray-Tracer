@@ -9,17 +9,17 @@ endif()
 
 list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake/")
 
-add_library(RayTracing
+add_library(RayTracer
     src/renderer.cpp
     src/scene_node.cpp
 )
 
-set_target_properties(RayTracing 
+set_target_properties(RayTracer 
     PROPERTIES 
     CXX_STANDARD 17
 )
 target_include_directories(
-    RayTracing
+    RayTracer
     PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
     PRIVATE src
 )
@@ -27,16 +27,16 @@ target_include_directories(
 # Find Dependencies
 find_package(SDL2 REQUIRED)
 
-add_executable(RayTracingTest
+add_executable(RayTracerApp
     app/main.cpp
 )
 
-target_link_libraries(RayTracingTest PRIVATE 
-    RayTracing
+target_link_libraries(RayTracerApp PRIVATE 
+    RayTracer
     SDL2::SDL2
 )
 
-set_target_properties(RayTracingTest 
+set_target_properties(RayTracerApp 
     PROPERTIES 
     CXX_STANDARD 17
 )

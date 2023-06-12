@@ -1,5 +1,5 @@
-#ifndef toy_tracer_MESH_HPP
-#define toy_tracer_MESH_HPP
+#ifndef TOY_TRACER_MESH_HPP
+#define TOY_TRACER_MESH_HPP
 
 #include "math.hpp"
 #include "renderable.hpp"

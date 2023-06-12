@@ -1,5 +1,5 @@
-#ifndef toy_tracer_TRIANGLE_HPP
-#define toy_tracer_TRIANGLE_HPP
+#ifndef TOY_TRACER_TRIANGLE_HPP
+#define TOY_TRACER_TRIANGLE_HPP
 
 #include "hitable.hpp"
 #include "math.hpp"

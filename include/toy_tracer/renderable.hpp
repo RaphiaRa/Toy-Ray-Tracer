@@ -1,5 +1,5 @@
-#ifndef toy_tracer_RENDERABLE_HPP
-#define toy_tracer_RENDERABLE_HPP
+#ifndef TOY_TRACER_RENDERABLE_HPP
+#define TOY_TRACER_RENDERABLE_HPP
 
 #include "hitable.hpp"
 #include "vertex_shader.hpp"

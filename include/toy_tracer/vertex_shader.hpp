@@ -1,5 +1,5 @@
-#ifndef toy_tracer_VERTEX_SHADER_HPP
-#define toy_tracer_VERTEX_SHADER_HPP
+#ifndef TOY_TRACER_VERTEX_SHADER_HPP
+#define TOY_TRACER_VERTEX_SHADER_HPP
 
 #include "math.hpp"
 

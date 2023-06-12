@@ -1,5 +1,5 @@
-#ifndef toy_tracer_MATH_H
-#define toy_tracer_MATH_H
+#ifndef TOY_TRACER_MATH_H
+#define TOY_TRACER_MATH_H
 
 #include <algorithm>
 #include <array>

@@ -1,5 +1,5 @@
-#ifndef toy_tracer_SCENE_NODE_HPP
-#define toy_tracer_SCENE_NODE_HPP
+#ifndef TOY_TRACER_SCENE_NODE_HPP
+#define TOY_TRACER_SCENE_NODE_HPP
 #include "math.hpp"
 #include "scene_object.hpp"
 

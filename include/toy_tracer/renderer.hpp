@@ -1,5 +1,5 @@
-#ifndef toy_tracer_RENDERER_HPP
-#define toy_tracer_RENDERER_HPP
+#ifndef TOY_TRACER_RENDERER_HPP
+#define TOY_TRACER_RENDERER_HPP
 
 #include "camera.hpp"
 #include "ray.hpp"

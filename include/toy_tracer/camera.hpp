@@ -1,5 +1,5 @@
-#ifndef toy_tracer_CAMERA_HPP
-#define toy_tracer_CAMERA_HPP
+#ifndef TOY_TRACER_CAMERA_HPP
+#define TOY_TRACER_CAMERA_HPP
 
 #include "math.hpp"
 #include "scene_node.hpp"

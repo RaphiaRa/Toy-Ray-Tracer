@@ -1,5 +1,5 @@
-#ifndef toy_tracer_RAY_HPP
-#define toy_tracer_RAY_HPP
+#ifndef TOY_TRACER_RAY_HPP
+#define TOY_TRACER_RAY_HPP
 
 #include "math.hpp"
 

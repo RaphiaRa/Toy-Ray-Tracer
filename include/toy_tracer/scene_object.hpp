@@ -1,5 +1,5 @@
-#ifndef toy_tracer_SCENE_OBJECT_HPP
-#define toy_tracer_SCENE_OBJECT_HPP
+#ifndef TOY_TRACER_SCENE_OBJECT_HPP
+#define TOY_TRACER_SCENE_OBJECT_HPP
 
 namespace toy_tracer
 {
