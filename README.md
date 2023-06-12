@@ -1,8 +1,9 @@
-### Toy-Ray-Tracer
+### Toy-Tracer
+### A simple software ray tracer written in C++.
 
 ### Work in progress!
 
-**Build Instructions**
+**Build Examples Instructions**
 Dependencies:
 - SDL2
 
