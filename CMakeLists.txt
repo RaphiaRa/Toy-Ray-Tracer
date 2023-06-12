@@ -27,16 +27,16 @@ target_include_directories(
 # Find Dependencies
 find_package(SDL2 REQUIRED)
 
-add_executable(RayTracerApp
-    app/main.cpp
+add_executable(Example01
+    example/example_01.cpp
 )
 
-target_link_libraries(RayTracerApp PRIVATE 
+target_link_libraries(Example01 PRIVATE 
     RayTracer
     SDL2::SDL2
 )
 
-set_target_properties(RayTracerApp 
+set_target_properties(Example01 
     PROPERTIES 
     CXX_STANDARD 17
 )
