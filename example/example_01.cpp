@@ -36,7 +36,7 @@ int main(int argc, char** argv)
 
     // Create SDL2 window, renderer and surface
     SDL_Init(SDL_INIT_VIDEO);
-    SDL_Window* window        = SDL_CreateWindow("Ray Tracing", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 800, 600, 0);
+    SDL_Window* window        = SDL_CreateWindow("Example01", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 800, 600, 0);
     SDL_Renderer* sdlRenderer = SDL_CreateRenderer(window, -1, 0);
     SDL_Surface* surface      = SDL_CreateRGBSurfaceFrom(buffer.data(), 800, 600, 24, 800 * 3, 0x0000FF, 0x00FF00, 0xFF0000, 0);
 
