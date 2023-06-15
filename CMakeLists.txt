@@ -3,9 +3,8 @@ project(RayTracing)
 
 
 # Extra warnings, treat warnings as error
-if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
-    add_compile_options(-Wall -Wextra -pedantic -Werror)
-endif()
+
+add_compile_options(-Wall -Wextra -pedantic -Werror)
 
 list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake/")
 
