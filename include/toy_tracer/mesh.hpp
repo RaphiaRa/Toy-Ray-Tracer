@@ -42,40 +42,45 @@ class Mesh : public SceneObject, public Renderable {
         math::Matrix<float, 3, 4> t_;
     };
 
-    class BoundingBox {
+    class BoundingSphere {
       public:
         using Vector3 = Mesh::Vector3;
 
-        BoundingBox() = default;
+        BoundingSphere() = default;
 
-        BoundingBox(Vector3 min, Vector3 max)
+        BoundingSphere(Vector3 min, Vector3 max)
+                : center_(0.5f * (min + max)), radius_(math::length(0.5f * (max - min)))
         {
-            triangles_.emplace_back(Vector3{ min[0], min[1], min[2] }, Vector3{ min[0], max[1], min[2] }, Vector3{ max[0], min[1], min[2] });
-            triangles_.emplace_back(Vector3{ max[0], min[1], min[2] }, Vector3{ min[0], max[1], min[2] }, Vector3{ max[0], max[1], min[2] });
-            triangles_.emplace_back(Vector3{ min[0], min[1], max[2] }, Vector3{ max[0], min[1], max[2] }, Vector3{ min[0], max[1], max[2] });
-            triangles_.emplace_back(Vector3{ max[0], min[1], max[2] }, Vector3{ max[0], max[1], max[2] }, Vector3{ min[0], max[1], max[2] });
-            triangles_.emplace_back(Vector3{ min[0], min[1], min[2] }, Vector3{ min[0], min[1], max[2] }, Vector3{ min[0], max[1], min[2] });
-            triangles_.emplace_back(Vector3{ min[0], max[1], min[2] }, Vector3{ min[0], min[1], max[2] }, Vector3{ min[0], max[1], max[2] });
-            triangles_.emplace_back(Vector3{ max[0], min[1], min[2] }, Vector3{ max[0], max[1], min[2] }, Vector3{ max[0], min[1], max[2] });
-            triangles_.emplace_back(Vector3{ max[0], min[1], max[2] }, Vector3{ max[0], max[1], min[2] }, Vector3{ max[0], max[1], max[2] });
-            triangles_.emplace_back(Vector3{ min[0], min[1], min[2] }, Vector3{ max[0], min[1], min[2] }, Vector3{ min[0], min[1], max[2] });
-            triangles_.emplace_back(Vector3{ max[0], min[1], min[2] }, Vector3{ max[0], min[1], max[2] }, Vector3{ min[0], min[1], max[2] });
-            triangles_.emplace_back(Vector3{ min[0], max[1], min[2] }, Vector3{ min[0], max[1], max[2] }, Vector3{ max[0], max[1], min[2] });
-            triangles_.emplace_back(Vector3{ max[0], max[1], min[2] }, Vector3{ min[0], max[1], max[2] }, Vector3{ max[0], max[1], max[2] });
         }
 
         std::optional<HitRecord> hit(const Ray& ray, const VertexMap& map) const noexcept
         {
-            for (auto& triangle : triangles_) {
-                std::optional<HitRecord> record;
-                if ((record = triangle.hit(ray, map)))
-                    return record;
+            const Vector3 center = map.map(center_);
+            const Vector3 p      = map.map(center + radius_ * Vector3{ 1.0f, 0.0f, 0.0f });
+            const float radius   = math::length(p - center);
+            if (math::length(ray.origin() - center) < radius) {
+                return HitRecord{};
             }
-            return std::nullopt;
+
+            const Vector3 oc = ray.origin() - center;
+            const auto& dir  = ray.direction();
+            const float a    = math::dot(dir, dir);
+            const float b    = 2.0f * math::dot(oc, dir);
+            const float c    = math::dot(oc, oc) - radius * radius;
+            const float d    = b * b - 4.0f * a * c;
+            if (d < 0.0f) {
+                return std::nullopt;
+            }
+            const float t = (-b - std::sqrt(d)) / (2.0f * a);
+            if (t < 0.0f) {
+                return std::nullopt;
+            }
+            return HitRecord{};
         }
 
       private:
-        std::vector<Triangle> triangles_;
+        Vector3 center_;
+        float radius_;
     };
 
   public:
@@ -84,8 +89,10 @@ class Mesh : public SceneObject, public Renderable {
     Mesh(std::vector<Triangle> triangles)
             : triangles_(), vertexMap_(), node_(nullptr)
     {
-        Vector3 max;
-        Vector3 min;
+        Vector3 max = { -std::numeric_limits<float>::max(), -std::numeric_limits<float>::max(),
+                        -std::numeric_limits<float>::max() };
+        Vector3 min = { std::numeric_limits<float>::max(), std::numeric_limits<float>::max(),
+                        std::numeric_limits<float>::max() };
         triangles_.reserve(triangles.size());
         for (auto& triangle : triangles) {
             max[0] = std::max(max[0], std::max(triangle.v0()[0], std::max(triangle.v1()[0], triangle.v2()[0])));
@@ -96,7 +103,7 @@ class Mesh : public SceneObject, public Renderable {
             min[2] = std::min(min[2], std::min(triangle.v0()[2], std::min(triangle.v1()[2], triangle.v2()[2])));
             triangles_.emplace_back(triangle);
         }
-        boundingBox_ = BoundingBox(min, max);
+        boundingSphere_ = BoundingSphere(min, max);
     }
 
     static Mesh fromStlFile(const std::string& filename)
@@ -140,7 +147,7 @@ class Mesh : public SceneObject, public Renderable {
 
     std::optional<HitRecord> hit(const Ray& ray) const noexcept override
     {
-        if (!boundingBox_.hit(ray, vertexMap_))
+        if (!boundingSphere_.hit(ray, vertexMap_))
             return std::nullopt;
 
         std::optional<HitRecord> hitRecord = std::nullopt;
@@ -170,7 +177,7 @@ class Mesh : public SceneObject, public Renderable {
 
   private:
     std::vector<Triangle> triangles_;
-    BoundingBox boundingBox_;
+    BoundingSphere boundingSphere_;
     Map vertexMap_;
     SceneNode* node_;
 };
