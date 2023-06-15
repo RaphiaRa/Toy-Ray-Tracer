@@ -6,49 +6,97 @@
 #include "scene_node.hpp"
 #include "scene_object.hpp"
 #include "triangle.hpp"
-#include "vertex_shader.hpp"
+#include "vertex_map.hpp"
 
 #include <fstream>
 
 namespace toy_tracer
 {
 class Mesh : public SceneObject, public Renderable {
+    using Vector3 = math::Vector<float, 3>;
 
-    class VertexTransformator : public VertexShader {
-        using Vector3 = math::Vector<float, 3>;
+    class Map : public VertexMap {
+        using Vector3 = Mesh::Vector3;
+        using Vector4 = math::Vector<float, 4>;
         using Matrix3 = math::Matrix<float, 3, 3>;
 
       public:
-        VertexTransformator()
-                : translate_{ 0.0, 0.0, 0.0 },
-                  scale_{ 1.0, 1.0, 1.0 },
-                  rot_{ Vector3{ 1.0, 0.0, 0.0 }, Vector3{ 0.0, 1.0, 0.0 }, Vector3{ 0.0, 0.0, 1.0 } }
+        Map()
+                : t_{}
         {
         }
 
-        VertexTransformator(const Vector3& translate, const Vector3& scale, const Matrix3& rot) noexcept
-                : translate_(translate), scale_(scale), rot_(rot)
+        Map(const Vector3& translate, const Vector3& scale, const Matrix3& rot) noexcept
+                : t_{ Vector4{ rot[0][0] * scale[0], rot[0][1] * scale[1], rot[0][2] * scale[2], translate[0] },
+                      Vector4{ rot[1][0] * scale[0], rot[1][1] * scale[1], rot[1][2] * scale[2], translate[1] },
+                      Vector4{ rot[2][0] * scale[0], rot[2][1] * scale[1], rot[2][2] * scale[2], translate[2] } }
         {
         }
 
-        Vector3 perform(const Vector3& vertex) const noexcept override
+        Vector3 map(const Vector3& vertex) const noexcept override
         {
-            Vector3 rotated = rot_ * vertex;
-            return (Vector3{ rotated[0] * scale_[0], rotated[1] * scale_[1], rotated[2] * scale_[2] } + translate_);
+            return t_ * Vector4{ vertex[0], vertex[1], vertex[2], 1.0f };
         }
 
       private:
-        Vector3 translate_;
-        Vector3 scale_;
-        Matrix3 rot_;
+        math::Matrix<float, 3, 4> t_;
+    };
+
+    class BoundingBox {
+      public:
+        using Vector3 = Mesh::Vector3;
+
+        BoundingBox() = default;
+
+        BoundingBox(Vector3 min, Vector3 max)
+        {
+            triangles_.emplace_back(Vector3{ min[0], min[1], min[2] }, Vector3{ min[0], max[1], min[2] }, Vector3{ max[0], min[1], min[2] });
+            triangles_.emplace_back(Vector3{ max[0], min[1], min[2] }, Vector3{ min[0], max[1], min[2] }, Vector3{ max[0], max[1], min[2] });
+            triangles_.emplace_back(Vector3{ min[0], min[1], max[2] }, Vector3{ max[0], min[1], max[2] }, Vector3{ min[0], max[1], max[2] });
+            triangles_.emplace_back(Vector3{ max[0], min[1], max[2] }, Vector3{ max[0], max[1], max[2] }, Vector3{ min[0], max[1], max[2] });
+            triangles_.emplace_back(Vector3{ min[0], min[1], min[2] }, Vector3{ min[0], min[1], max[2] }, Vector3{ min[0], max[1], min[2] });
+            triangles_.emplace_back(Vector3{ min[0], max[1], min[2] }, Vector3{ min[0], min[1], max[2] }, Vector3{ min[0], max[1], max[2] });
+            triangles_.emplace_back(Vector3{ max[0], min[1], min[2] }, Vector3{ max[0], max[1], min[2] }, Vector3{ max[0], min[1], max[2] });
+            triangles_.emplace_back(Vector3{ max[0], min[1], max[2] }, Vector3{ max[0], max[1], min[2] }, Vector3{ max[0], max[1], max[2] });
+            triangles_.emplace_back(Vector3{ min[0], min[1], min[2] }, Vector3{ max[0], min[1], min[2] }, Vector3{ min[0], min[1], max[2] });
+            triangles_.emplace_back(Vector3{ max[0], min[1], min[2] }, Vector3{ max[0], min[1], max[2] }, Vector3{ min[0], min[1], max[2] });
+            triangles_.emplace_back(Vector3{ min[0], max[1], min[2] }, Vector3{ min[0], max[1], max[2] }, Vector3{ max[0], max[1], min[2] });
+            triangles_.emplace_back(Vector3{ max[0], max[1], min[2] }, Vector3{ min[0], max[1], max[2] }, Vector3{ max[0], max[1], max[2] });
+        }
+
+        std::optional<HitRecord> hit(const Ray& ray, const VertexMap& map) const noexcept
+        {
+            for (auto& triangle : triangles_) {
+                std::optional<HitRecord> record;
+                if ((record = triangle.hit(ray, map)))
+                    return record;
+            }
+            return std::nullopt;
+        }
+
+      private:
+        std::vector<Triangle> triangles_;
     };
 
   public:
     Mesh() = default;
 
     Mesh(std::vector<Triangle> triangles)
-            : triangles_(std::move(triangles)), vertexTransformator_(), node_(nullptr)
+            : triangles_(), vertexMap_(), node_(nullptr)
     {
+        Vector3 max;
+        Vector3 min;
+        triangles_.reserve(triangles.size());
+        for (auto& triangle : triangles) {
+            max[0] = std::max(max[0], std::max(triangle.v0()[0], std::max(triangle.v1()[0], triangle.v2()[0])));
+            max[1] = std::max(max[1], std::max(triangle.v0()[1], std::max(triangle.v1()[1], triangle.v2()[1])));
+            max[2] = std::max(max[2], std::max(triangle.v0()[2], std::max(triangle.v1()[2], triangle.v2()[2])));
+            min[0] = std::min(min[0], std::min(triangle.v0()[0], std::min(triangle.v1()[0], triangle.v2()[0])));
+            min[1] = std::min(min[1], std::min(triangle.v0()[1], std::min(triangle.v1()[1], triangle.v2()[1])));
+            min[2] = std::min(min[2], std::min(triangle.v0()[2], std::min(triangle.v1()[2], triangle.v2()[2])));
+            triangles_.emplace_back(triangle);
+        }
+        boundingBox_ = BoundingBox(min, max);
     }
 
     static Mesh fromStlFile(const std::string& filename)
@@ -90,24 +138,25 @@ class Mesh : public SceneObject, public Renderable {
     Mesh& operator=(Mesh&&)      = default;
     ~Mesh() override             = default;
 
-    const Hitable* hitableAt(std::size_t index) const noexcept override
+    std::optional<HitRecord> hit(const Ray& ray) const noexcept override
     {
-        return &triangles_[index];
-    }
+        if (!boundingBox_.hit(ray, vertexMap_))
+            return std::nullopt;
 
-    std::size_t hitableCount() const noexcept override
-    {
-        return triangles_.size();
-    }
-
-    const VertexShader& vertexShader() const noexcept override
-    {
-        return vertexTransformator_;
+        std::optional<HitRecord> hitRecord = std::nullopt;
+        for (auto& triangle : triangles_) {
+            if (auto record = triangle.hit(ray, vertexMap_)) {
+                if (!hitRecord || record->distance < hitRecord->distance) {
+                    hitRecord = record;
+                }
+            }
+        }
+        return hitRecord;
     }
 
     void notifyNodeUpdated() override
     {
-        vertexTransformator_ = VertexTransformator(node_->absPos(), node_->absScale(), node_->absRot());
+        vertexMap_ = Map(node_->absPos(), node_->absScale(), node_->absRot());
     }
 
     void notifyAttached(SceneNode* node) override
@@ -121,7 +170,8 @@ class Mesh : public SceneObject, public Renderable {
 
   private:
     std::vector<Triangle> triangles_;
-    VertexTransformator vertexTransformator_;
+    BoundingBox boundingBox_;
+    Map vertexMap_;
     SceneNode* node_;
 };
 } // namespace toy_tracer

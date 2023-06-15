@@ -1,12 +1,22 @@
 #include <optional>
+#include <random>
+#include <thread>
 #include <toy_tracer/camera.hpp>
 #include <toy_tracer/ray.hpp>
 #include <toy_tracer/renderer.hpp>
 
 using toy_tracer::Renderer;
-using Vector3 = toy_tracer::math::Vector<float, 3>;
+using Vector3     = toy_tracer::math::Vector<float, 3>;
+using ColorVector = toy_tracer::math::Vector<float, 3>;
 
-void Renderer::render(void* buffer, size_t size)
+inline float random_float()
+{
+    static std::uniform_real_distribution<float> dist(0.0f, 1.0f);
+    static std::mt19937 gen;
+    return dist(gen);
+}
+
+void Renderer::render(void* buffer, size_t size, const World& world) const noexcept
 {
     if (camera_ == nullptr) {
         return;
@@ -17,41 +27,42 @@ void Renderer::render(void* buffer, size_t size)
     float viewportHeight    = camera_->viewportHeight();
     float focalLength       = camera_->focalLength();
     Vector3 lowerLeftCorner = origin - Vector3{ viewportWidth / 2.0f, viewportHeight / 2.0f, -focalLength };
+    const int samples       = 100;
 
-    for (int w = 0; w < width_; ++w) {
-        for (int h = height_ - 1; h >= 0; --h) {
-            // normalize pixel coordinates
-            float u            = static_cast<float>(w) / static_cast<float>(width_ - 1);
-            float v            = static_cast<float>(h) / static_cast<float>(height_ - 1);
-            Vector3 direction  = (lowerLeftCorner + Vector3{ u * viewportWidth, v * viewportHeight, 0.0f }) - origin;
-            Vector3 normalized = direction / math::length(direction);
-            Ray ray(origin, normalized);
+    auto task = [&](int thread, int thread_count) {
+        for (int w = thread; w < width_; w += thread_count) {
+            for (int h = height_ - 1; h >= 0; --h) {
+                ColorVector color = { 0, 0, 0 };
+                for (int s = 0; s < samples; ++s) {
+                    // normalize pixel coordinates
+                    float u            = (static_cast<float>(w) + random_float()) / static_cast<float>(width_ - 1);
+                    float v            = (static_cast<float>(h) + random_float()) / static_cast<float>(height_ - 1);
+                    Vector3 direction  = (lowerLeftCorner + Vector3{ u * viewportWidth, v * viewportHeight, 0.0f }) - origin;
+                    Vector3 normalized = direction / math::length(direction);
+                    Ray ray(origin, direction);
 
-            std::optional<HitRecord> hitRecord;
-            for (Renderable* r : renderables_) {
-                for (std::size_t count = 0; count < r->hitableCount(); ++count) {
-                    HitRecord newHitRecord;
-                    if (r->hitableAt(count)->hit(ray, r->vertexShader(), newHitRecord)) {
-                        if (!hitRecord.has_value() || newHitRecord.distance < hitRecord->distance) {
-                            hitRecord = newHitRecord;
-                        }
-                    }
+                    std::optional<HitRecord> hitRecord;
+
+                    color += world.hit(ray);
                 }
-            }
+                color /= static_cast<float>(samples);
 
-            size_t index = (h * width_ + w) * 3;
-            if (index >= size) {
-                return;
-            }
-            if (!hitRecord.has_value()) {
-                static_cast<std::uint8_t*>(buffer)[index + 0] = 0;
-                static_cast<std::uint8_t*>(buffer)[index + 1] = 0;
-                static_cast<std::uint8_t*>(buffer)[index + 2] = 0;
-            } else {
-                static_cast<std::uint8_t*>(buffer)[index + 0] = static_cast<std::uint8_t>(hitRecord->rgb[0]);
-                static_cast<std::uint8_t*>(buffer)[index + 1] = static_cast<std::uint8_t>(hitRecord->rgb[1]);
-                static_cast<std::uint8_t*>(buffer)[index + 2] = static_cast<std::uint8_t>(hitRecord->rgb[2]);
+                size_t index = (h * width_ + w) * 3;
+                if (index >= size) {
+                    return;
+                }
+
+                static_cast<std::uint8_t*>(buffer)[index + 0] = color[0];
+                static_cast<std::uint8_t*>(buffer)[index + 1] = color[1];
+                static_cast<std::uint8_t*>(buffer)[index + 2] = color[2];
             }
         }
+    };
+    std::thread t[8];
+    for (int i = 0; i < 8; ++i) {
+        t[i] = std::thread(task, i, 8);
+    }
+    for (int i = 0; i < 8; ++i) {
+        t[i].join();
     }
 }

@@ -22,6 +22,11 @@ class Ray {
         return direction_;
     }
 
+    math::Vector<float, 3> at(float t) const
+    {
+        return origin_ + t * direction_;
+    }
+
   private:
     math::Vector<float, 3> origin_;
     math::Vector<float, 3> direction_;

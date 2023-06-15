@@ -14,10 +14,9 @@ int main(int argc, char** argv)
     toy_tracer::Camera camera(4, 3, 1.0f);
     renderer.setCamera(camera);
 
-    toy_tracer::Mesh mesh = toy_tracer::Mesh::fromStlFile("../data/monkey.stl");
-
     toy_tracer::SceneGraph graph;
-    graph.addObserver(&renderer);
+    toy_tracer::World world;
+    graph.addObserver(&world);
 
     toy_tracer::SceneNode cameraNode("camera");
     cameraNode.attach(&camera);
@@ -25,16 +24,25 @@ int main(int argc, char** argv)
     graph.rootNode().attach(&cameraNode);
 
     toy_tracer::SceneNode meshNode("mesh");
+    toy_tracer::Mesh mesh = toy_tracer::Mesh::fromStlFile("../data/monkey.stl");
     meshNode.attach(&mesh);
-    meshNode.translate(Vector3{ 0.0f, 0.0f, 1.0f });
+    meshNode.translate(Vector3{ 0.0f, 0.25f, 2.0f });
     meshNode.rotateX(toy_tracer::math::degToRad(80.0f));
     meshNode.rotateZ(toy_tracer::math::degToRad(-10.0f));
-
     graph.rootNode().attach(&meshNode);
+
+    toy_tracer::SceneNode floorNode("floor_mesh");
+    std::vector<toy_tracer::Triangle> floorMeshTriangles = { { toy_tracer::Triangle({ { -1.0f, 0.0f, 1.0f }, { -1.0f, 0.0f, -1.0f }, { 1.0f, 0.0f, -1.0f } }),
+                                                               toy_tracer::Triangle({ { -1.0f, 0.0f, 1.0f }, { 1.0f, 0.0f, -1.0f }, { 1.0f, 0.0f, 1.0f } }) } };
+    toy_tracer::Mesh floorMesh(floorMeshTriangles);
+    floorNode.attach(&floorMesh);
+    floorNode.translate(Vector3{ 0.0f, 2.0f, 2.0f });
+    floorNode.scale(Vector3{10.0f, 10.0f, 10.0f });
+    graph.rootNode().attach(&floorNode);
 
     std::vector<uint8_t> buffer(800 * 600 * 3);
     graph.rootNode().update();
-    renderer.render(buffer.data(), buffer.size());
+    renderer.render(buffer.data(), buffer.size(), world);
 
     // Create SDL2 window, renderer and surface
     SDL_Init(SDL_INIT_VIDEO);

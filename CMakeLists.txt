@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.9 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.10 FATAL_ERROR)
 project(RayTracing)
 
 
@@ -23,6 +23,8 @@ target_include_directories(
     PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
     PRIVATE src
 )
+
+#target_link_libraries(RayTracer PRIVATE OpenMP::OpenMP_CXX)
 
 # Find Dependencies
 find_package(SDL2 REQUIRED)

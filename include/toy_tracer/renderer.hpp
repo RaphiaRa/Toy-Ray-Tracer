@@ -5,12 +5,13 @@
 #include "ray.hpp"
 #include "renderable.hpp"
 #include "scene_node.hpp"
+#include "world.hpp"
 
 #include <vector>
 
 namespace toy_tracer
 {
-class Renderer final : public SceneGraphObserver {
+class Renderer final {
   public:
     ~Renderer() = default;
     Renderer(int width, int height)
@@ -23,27 +24,10 @@ class Renderer final : public SceneGraphObserver {
         camera_ = &camera;
     }
 
-    void notifyAdded(SceneObject* node) override
-    {
-        if (auto renderable = dynamic_cast<Renderable*>(node)) {
-            renderables_.push_back(renderable);
-        }
-    }
-
-    void notifyRemoved(SceneObject* node) override
-    {
-        if (auto renderable = dynamic_cast<Renderable*>(node)) {
-            auto it = std::find(renderables_.begin(), renderables_.end(), renderable);
-            if (it != renderables_.end()) {
-                renderables_.erase(it);
-            }
-        }
-    }
-
     /**
      * @brief Render the scene to the given buffer
      */
-    void render(void* buffer, size_t size);
+    void render(void* buffer, size_t size, const World& world) const noexcept;
 
   private:
     int width_;

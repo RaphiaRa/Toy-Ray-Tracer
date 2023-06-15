@@ -94,32 +94,30 @@ toy_tracer::math::Vector<T, N> operator-(const toy_tracer::math::Vector<T, N>& v
 }
 
 template<typename T, std::size_t N>
-toy_tracer::math::Vector<T, N> operator*(float l, toy_tracer::math::Vector<T, N> w)
-{
-    for (std::size_t i = 0; i < N; ++i)
-        w[i] *= l;
-    return w;
-}
-
-template<typename T, std::size_t N>
-toy_tracer::math::Vector<T, N>& operator*=(toy_tracer::math::Vector<T, N> w, float l)
-{
-    for (std::size_t i = 0; i < N; ++i)
-        w[i] *= l;
-    return w;
-}
-
-template<typename T, std::size_t N>
-toy_tracer::math::Vector<T, N> operator*(toy_tracer::math::Vector<T, N> w, float l)
+toy_tracer::math::Vector<T, N> operator*(T l, const toy_tracer::math::Vector<T, N>& w)
 {
     toy_tracer::math::Vector<T, N> v;
     for (std::size_t i = 0; i < N; ++i)
-        v[i] = w[i] * l;
+        v[i] = l * w[i];
     return v;
 }
 
 template<typename T, std::size_t N>
-toy_tracer::math::Vector<T, N>& operator/=(toy_tracer::math::Vector<T, N> w, float l)
+toy_tracer::math::Vector<T, N>& operator*=(toy_tracer::math::Vector<T, N>& w, T l)
+{
+    for (std::size_t i = 0; i < N; ++i)
+        w[i] *= l;
+    return w;
+}
+
+template<typename T, std::size_t N>
+toy_tracer::math::Vector<T, N> operator*(const toy_tracer::math::Vector<T, N>& w, T l)
+{
+    return l * w;
+}
+
+template<typename T, std::size_t N>
+toy_tracer::math::Vector<T, N>& operator/=(toy_tracer::math::Vector<T, N>& w, T l)
 {
     for (std::size_t i = 0; i < N; ++i)
         w[i] /= l;
@@ -127,7 +125,7 @@ toy_tracer::math::Vector<T, N>& operator/=(toy_tracer::math::Vector<T, N> w, flo
 }
 
 template<typename T, std::size_t N>
-toy_tracer::math::Vector<T, N> operator/(const toy_tracer::math::Vector<T, N> w, float l)
+toy_tracer::math::Vector<T, N> operator/(const toy_tracer::math::Vector<T, N>& w, T l)
 {
     toy_tracer::math::Vector<T, N> v;
     for (std::size_t i = 0; i < N; ++i)
@@ -136,7 +134,7 @@ toy_tracer::math::Vector<T, N> operator/(const toy_tracer::math::Vector<T, N> w,
 }
 
 template<typename T, std::size_t N, std::size_t M>
-toy_tracer::math::Vector<T, N> operator*(const toy_tracer::math::Matrix<T, N, M>& m, const toy_tracer::math::Vector<T, M> v)
+toy_tracer::math::Vector<T, N> operator*(const toy_tracer::math::Matrix<T, N, M>& m, const toy_tracer::math::Vector<T, M>& v)
 {
     toy_tracer::math::Vector<T, N> r;
     for (std::size_t i = 0; i < N; ++i)
