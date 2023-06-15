@@ -38,31 +38,27 @@ void Renderer::render(void* buffer, size_t size, const World& world) const noexc
                     float u            = (static_cast<float>(w) + random_float()) / static_cast<float>(width_ - 1);
                     float v            = (static_cast<float>(h) + random_float()) / static_cast<float>(height_ - 1);
                     Vector3 direction  = (lowerLeftCorner + Vector3{ u * viewportWidth, v * viewportHeight, 0.0f }) - origin;
-                    Vector3 normalized = direction / math::length(direction);
                     Ray ray(origin, direction);
-
-                    std::optional<HitRecord> hitRecord;
-
                     color += world.hit(ray);
                 }
                 color /= static_cast<float>(samples);
-
                 size_t index = (h * width_ + w) * 3;
                 if (index >= size) {
                     return;
                 }
-
                 static_cast<std::uint8_t*>(buffer)[index + 0] = color[0];
                 static_cast<std::uint8_t*>(buffer)[index + 1] = color[1];
                 static_cast<std::uint8_t*>(buffer)[index + 2] = color[2];
             }
         }
     };
-    std::thread t[8];
-    for (int i = 0; i < 8; ++i) {
-        t[i] = std::thread(task, i, 8);
+
+    const int thread_count = std::thread::hardware_concurrency();
+    std::vector<std::thread> t(thread_count);
+    for (int i = 0; i < thread_count; ++i) {
+        t[i] = std::thread(task, i, thread_count);
     }
-    for (int i = 0; i < 8; ++i) {
+    for (int i = 0; i < thread_count; ++i) {
         t[i].join();
     }
 }
