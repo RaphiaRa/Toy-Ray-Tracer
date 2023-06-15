@@ -1,5 +1,7 @@
 ### Toy-Tracer
 ### A simple software ray tracer written in C++.
+Based on:
+[_Ray Tracing in One Weekend_](https://raytracing.github.io/books/RayTracingInOneWeekend.html)
 
 ### Work in progress!
 
